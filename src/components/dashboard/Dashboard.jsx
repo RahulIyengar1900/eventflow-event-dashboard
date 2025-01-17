@@ -39,6 +39,7 @@ import PhoneIcon from '@mui/icons-material/Phone';
 import CreateEventModal from '../modals/CreateEventModal';
 import AddAttendeeModal from '../modals/AddAttendeeModal';
 import AddTaskModal from '../modals/AddTaskModal';
+import DashboardCharts from './DashboardCharts';
 
 const Dashboard = () => {
   const [timeOfDay, setTimeOfDay] = useState('');
@@ -245,6 +246,9 @@ const Dashboard = () => {
             <StatsCard icon={TrendingUpIcon} value="89%" label="Success Rate" />
           </Grid>
         </Grid>
+
+        {/* Charts */}
+        <DashboardCharts />
 
         {/* Quick Actions */}
         <Box sx={{ mb: 6 }}>

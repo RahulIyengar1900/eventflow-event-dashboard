@@ -5,6 +5,7 @@ import { ThemeProvider, createTheme, CssBaseline, Box } from '@mui/material'
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import Login from './components/auth/Login'
+import SignUp from './components/auth/SignUp'
 import Dashboard from './components/dashboard/Dashboard'
 import Navigation from './components/layout/Navigation'
 import Events from './pages/Events';
@@ -50,15 +51,23 @@ function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <LocalizationProvider dateAdapter={AdapterDateFns}>
-        <Router>
-          <Box sx={{ minHeight: '100vh', backgroundColor: '#f5f5f5' }}>
+        <Router basename="/eventflow-event-dashboard">
+          <Box sx={{ display: 'flex' }}>
             <Navigation />
-            <Box sx={{ pt: 8 }}>
+            <Box
+              component="main"
+              sx={{
+                flexGrow: 1,
+                minHeight: '100vh',
+                backgroundColor: '#f5f5f5',
+              }}
+            >
               <Routes>
-                <Route path="/" element={<Login />} />
-                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/" element={<Dashboard />} />
                 <Route path="/events" element={<Events />} />
                 <Route path="/tasks" element={<Tasks />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<SignUp />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </Box>
