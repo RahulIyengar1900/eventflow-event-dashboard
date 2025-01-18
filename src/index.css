@@ -27,12 +27,14 @@
 
 body {
   margin: 0;
+  padding: 0;
   display: flex;
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
   font-family: 'Montserrat', sans-serif;
   background-color: var(--background-color);
+  overflow-x: hidden;
 }
 
 h1 {
@@ -110,6 +112,12 @@ a:hover {
 .MuiPaper-root:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1) !important;
+}
+
+.grid-container {
+  margin: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
 }
 
 @media (prefers-color-scheme: light) {

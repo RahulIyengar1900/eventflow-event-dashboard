@@ -1,282 +1,283 @@
 import React, { useState } from 'react';
 import {
   Box,
+  Container,
   Typography,
-  Grid,
-  Card,
+  Paper,
   List,
   ListItem,
   ListItemText,
-  ListItemAvatar,
-  ListItemSecondaryAction,
+  ListItemIcon,
   IconButton,
-  Button,
   Chip,
-  Menu,
-  MenuItem,
-  Checkbox,
-  Divider,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
   TextField,
-  InputAdornment,
+  Grid,
 } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import FilterListIcon from '@mui/icons-material/FilterList';
-import SearchIcon from '@mui/icons-material/Search';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
-import AddTaskModal from '../components/modals/AddTaskModal';
-import PageHeader from '../components/common/PageHeader';
-import Footer from '../components/common/Footer';
+import {
+  CheckCircle as CheckCircleIcon,
+  RadioButtonUnchecked as RadioButtonUncheckedIcon,
+  Delete as DeleteIcon,
+  Edit as EditIcon,
+} from '@mui/icons-material';
+import PageHeader from '../components/layout/PageHeader';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 
 const Tasks = () => {
-  const [openAddTask, setOpenAddTask] = useState(false);
-  const [filterAnchorEl, setFilterAnchorEl] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [tasks, setTasks] = useState([
+    { id: 1, title: 'Finalize venue contract', status: 'pending', dueDate: '2025-01-25', event: 'Tech Conference 2025', assignedTo: 'Sarah Johnson' },
+    { id: 2, title: 'Send speaker invitations', status: 'completed', dueDate: '2025-01-28', event: 'Tech Conference 2025', assignedTo: 'Michael Chen' },
+    { id: 3, title: 'Order promotional materials', status: 'in_progress', dueDate: '2025-02-01', event: 'Product Launch', assignedTo: 'Emma Davis' },
+    { id: 4, title: 'Review catering options', status: 'pending', dueDate: '2025-02-05', event: 'Design Workshop', assignedTo: 'Alex Thompson' },
+  ]);
 
-  const tasks = [
-    { id: 1, title: 'Prepare event proposal', status: 'open', assignee: 'Sarah Johnson', priority: 'high', dueDate: 'Jan 20' },
-    { id: 2, title: 'Book venue for conference', status: 'closed', assignee: 'Michael Chen', priority: 'medium', dueDate: 'Jan 22' },
-    { id: 3, title: 'Send invitations', status: 'open', assignee: 'Emma Davis', priority: 'high', dueDate: 'Jan 25' },
-    { id: 4, title: 'Order catering', status: 'open', assignee: 'Alex Thompson', priority: 'medium', dueDate: 'Jan 28' },
-    { id: 5, title: 'Arrange transportation', status: 'open', assignee: 'Lisa Wang', priority: 'low', dueDate: 'Jan 30' },
-    { id: 6, title: 'Set up registration system', status: 'closed', assignee: 'David Kim', priority: 'high', dueDate: 'Feb 1' },
-    { id: 7, title: 'Design event badges', status: 'open', assignee: 'Rachel Green', priority: 'medium', dueDate: 'Feb 3' },
-    { id: 8, title: 'Coordinate with speakers', status: 'open', assignee: 'James Wilson', priority: 'high', dueDate: 'Feb 5' },
-  ];
+  const [openTaskModal, setOpenTaskModal] = useState(false);
+  const [editingTask, setEditingTask] = useState(null);
+  const [completedTasks, setCompletedTasks] = useState(new Set());
+  const [selectedDate, setSelectedDate] = useState(null);
 
-  const handleFilterClick = (event) => {
-    setFilterAnchorEl(event.currentTarget);
+  const handleTaskComplete = (taskId) => {
+    setCompletedTasks(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(taskId)) {
+        newSet.delete(taskId);
+      } else {
+        newSet.add(taskId);
+      }
+      return newSet;
+    });
   };
 
-  const handleFilterClose = () => {
-    setFilterAnchorEl(null);
+  const handleEditTask = (task) => {
+    setEditingTask(task);
+    setOpenTaskModal(true);
   };
 
-  const handleTaskToggle = (taskId) => {
-    // Implement task toggle logic
-  };
-
-  const getPriorityColor = (priority, status) => {
-    if (status === 'closed') return '#e0e0e0';
-    switch (priority) {
-      case 'high':
-        return '#ef5350';
-      case 'medium':
-        return '#fb8c00';
-      case 'low':
-        return '#66bb6a';
-      default:
-        return '#333';
-    }
+  const handleDeleteTask = (taskId) => {
+    setTasks(tasks.filter(task => task.id !== taskId));
   };
 
   return (
-    <Box sx={{ 
-      display: 'flex', 
-      flexDirection: 'column', 
-      minHeight: '100vh',
-      width: '100vw',
-      maxWidth: '100%',
-      overflowX: 'hidden'
-    }}>
-      <PageHeader title="Manage Your Tasks" />
-      
-      <Box sx={{ 
-        flex: 1,
-        width: '100%',
-        px: { xs: 3, md: 6 },
-        pb: 6
-      }}>
-        {/* Header */}
-        <Box sx={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center', 
-          mb: 4,
-          width: '100%'
-        }}>
-          <Box sx={{ display: 'flex', gap: 2 }}>
-            <Button
-              variant="outlined"
-              startIcon={<FilterListIcon />}
-              onClick={handleFilterClick}
-              sx={{
-                borderColor: '#333',
-                color: '#333',
-                '&:hover': {
-                  borderColor: '#000',
-                  backgroundColor: 'rgba(0,0,0,0.05)',
-                },
-              }}
-            >
-              Filter
-            </Button>
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={() => setOpenAddTask(true)}
-              sx={{
-                backgroundColor: '#333',
-                '&:hover': {
-                  backgroundColor: '#000',
-                },
-              }}
-            >
-              Add Task
-            </Button>
-          </Box>
-        </Box>
+    <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%', overflowX: 'hidden' }}>
+      <PageHeader
+        title="Tasks"
+        subtitle="Manage your event tasks"
+        showActions={true}
+        onAddTask={() => {
+          setEditingTask(null);
+          setOpenTaskModal(true);
+        }}
+      />
 
-        {/* Search and Filter Bar */}
-        <Box sx={{ mb: 4, width: '100%' }}>
-          <Grid container spacing={2}>
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                variant="outlined"
-                placeholder="Search tasks..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon sx={{ color: '#666' }} />
-                    </InputAdornment>
-                  ),
-                }}
+      <Container maxWidth={false} sx={{ flex: 1, py: 6, width: '100%' }}>
+        <Paper sx={{ width: '100%', p: 3 }}>
+          <List sx={{ width: '100%' }}>
+            {tasks.map((task) => (
+              <ListItem
+                key={task.id}
                 sx={{
-                  '& .MuiOutlinedInput-root': {
-                    '& fieldset': {
-                      borderColor: '#e0e0e0',
-                    },
-                    '&:hover fieldset': {
-                      borderColor: '#333',
-                    },
-                  },
+                  borderBottom: '1px solid rgba(0, 0, 0, 0.12)',
+                  py: 2,
+                  listStyle: 'none',
                 }}
-              />
-            </Grid>
-          </Grid>
-        </Box>
-
-        {/* Tasks List */}
-        <Card sx={{ 
-          borderRadius: 0, 
-          width: '100%',
-          maxWidth: '100%',
-          boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-        }}>
-          <List sx={{ 
-            width: '100%',
-            maxWidth: '100%',
-            p: 0
-          }}>
-            {tasks.map((task, index) => (
-              <React.Fragment key={task.id}>
-                <ListItem sx={{ width: '100%' }}>
-                  <ListItemAvatar>
-                    <Checkbox
-                      checked={task.status === 'closed'}
-                      onChange={() => handleTaskToggle(task.id)}
-                      icon={<RadioButtonUncheckedIcon sx={{ fontSize: 28 }} />}
-                      checkedIcon={<CheckCircleIcon sx={{ fontSize: 28 }} />}
-                    />
-                  </ListItemAvatar>
-                  <ListItemText
-                    primary={
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
-                        <Typography
-                          sx={{
-                            fontFamily: 'Montserrat',
-                            fontWeight: 500,
-                            textDecoration: task.status === 'closed' ? 'line-through' : 'none',
-                            color: task.status === 'closed' ? '#666' : '#333',
-                          }}
-                        >
-                          {task.title}
-                        </Typography>
-                        <Chip
-                          label={task.priority}
-                          size="small"
-                          sx={{
-                            backgroundColor: getPriorityColor(task.priority, task.status),
-                            color: 'white',
-                            fontFamily: 'Montserrat',
-                            textTransform: 'capitalize',
-                            height: '24px',
-                          }}
-                        />
-                      </Box>
-                    }
-                    secondary={
-                      <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
-                        <Typography
-                          sx={{
-                            fontFamily: 'Montserrat',
-                            color: '#666',
-                            fontSize: '0.875rem',
-                            mr: 2,
-                          }}
-                        >
-                          Assigned to: {task.assignee}
-                        </Typography>
-                        <Typography
-                          sx={{
-                            fontFamily: 'Montserrat',
-                            color: '#666',
-                            fontSize: '0.875rem',
-                          }}
-                        >
-                          Due: {task.dueDate}
-                        </Typography>
-                      </Box>
-                    }
-                  />
-                  <ListItemSecondaryAction>
-                    <IconButton edge="end" sx={{ color: '#666', mr: 1 }}>
-                      <EditIcon sx={{ fontSize: 24 }} />
+                secondaryAction={
+                  <Box>
+                    <IconButton edge="end" onClick={() => handleEditTask(task)} sx={{ mr: 1 }}>
+                      <EditIcon />
                     </IconButton>
-                    <IconButton edge="end" sx={{ color: '#666' }}>
-                      <DeleteIcon sx={{ fontSize: 24 }} />
+                    <IconButton edge="end" onClick={() => handleDeleteTask(task.id)}>
+                      <DeleteIcon />
                     </IconButton>
-                  </ListItemSecondaryAction>
-                </ListItem>
-                {index < tasks.length - 1 && <Divider />}
-              </React.Fragment>
+                  </Box>
+                }
+              >
+                <ListItemIcon>
+                  <IconButton onClick={() => handleTaskComplete(task.id)}>
+                    {completedTasks.has(task.id) ? (
+                      <CheckCircleIcon color="success" />
+                    ) : (
+                      <RadioButtonUncheckedIcon />
+                    )}
+                  </IconButton>
+                </ListItemIcon>
+                <ListItemText
+                  primary={
+                    <Typography
+                      variant="subtitle1"
+                      sx={{
+                        textDecoration: completedTasks.has(task.id) ? 'line-through' : 'none',
+                        color: completedTasks.has(task.id) ? 'text.secondary' : 'text.primary',
+                      }}
+                    >
+                      {task.title}
+                    </Typography>
+                  }
+                  secondary={
+                    <Box sx={{ mt: 1 }}>
+                      <Typography variant="body2" color="text.secondary">
+                        Due: {task.dueDate}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Event: {task.event}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Assigned to: {task.assignedTo}
+                      </Typography>
+                      <Chip
+                        label={task.status}
+                        color={
+                          task.status === 'completed' ? 'success' :
+                          task.status === 'in_progress' ? 'warning' : 'error'
+                        }
+                        size="small"
+                        sx={{ mt: 1 }}
+                      />
+                    </Box>
+                  }
+                />
+              </ListItem>
             ))}
           </List>
-        </Card>
+        </Paper>
+      </Container>
 
-        {/* Filter Menu */}
-        <Menu
-          anchorEl={filterAnchorEl}
-          open={Boolean(filterAnchorEl)}
-          onClose={handleFilterClose}
-          PaperProps={{
-            sx: {
-              mt: 1,
-              minWidth: 180,
-            },
-          }}
-        >
-          <MenuItem onClick={handleFilterClose}>All Tasks</MenuItem>
-          <MenuItem onClick={handleFilterClose}>Open Tasks</MenuItem>
-          <MenuItem onClick={handleFilterClose}>Completed Tasks</MenuItem>
-          <MenuItem onClick={handleFilterClose}>High Priority</MenuItem>
-          <MenuItem onClick={handleFilterClose}>Medium Priority</MenuItem>
-          <MenuItem onClick={handleFilterClose}>Low Priority</MenuItem>
-        </Menu>
+      <Dialog open={openTaskModal} onClose={() => {
+        setOpenTaskModal(false);
+        setEditingTask(null);
+      }} maxWidth="sm" fullWidth>
+        <DialogTitle>{editingTask ? 'Edit Task' : 'Add New Task'}</DialogTitle>
+        <DialogContent>
+          <Box component="form" sx={{ mt: 2 }}>
+            <TextField
+              fullWidth
+              label="Task Title"
+              margin="normal"
+              required
+              defaultValue={editingTask?.title || ''}
+            />
+            <TextField
+              fullWidth
+              label="Event"
+              margin="normal"
+              required
+              defaultValue={editingTask?.event || ''}
+            />
+            <TextField
+              fullWidth
+              label="Assigned To"
+              margin="normal"
+              required
+              defaultValue={editingTask?.assignedTo || ''}
+            />
+            <LocalizationProvider dateAdapter={AdapterDateFns}>
+              <DatePicker
+                label="Due Date"
+                value={selectedDate}
+                onChange={(newValue) => setSelectedDate(newValue)}
+                slotProps={{
+                  textField: {
+                    fullWidth: true,
+                    margin: 'normal'
+                  }
+                }}
+              />
+            </LocalizationProvider>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => {
+            setOpenTaskModal(false);
+            setEditingTask(null);
+          }}>Cancel</Button>
+          <Button variant="contained" onClick={() => {
+            setOpenTaskModal(false);
+            setEditingTask(null);
+          }}>{editingTask ? 'Save Changes' : 'Add Task'}</Button>
+        </DialogActions>
+      </Dialog>
 
-        {/* Add Task Modal */}
-        <AddTaskModal
-          open={openAddTask}
-          onClose={() => setOpenAddTask(false)}
-        />
+      {/* Footer */}
+      <Box
+        component="footer"
+        sx={{
+          width: '100%',
+          bgcolor: '#333',
+          color: 'white',
+          py: 6,
+          mt: 6,
+        }}
+      >
+        <Container maxWidth={false}>
+          <Grid container spacing={4}>
+            <Grid item xs={12} md={4} sx={{ textAlign: 'left' }}>
+              <Typography variant="h6" sx={{ mb: 2, fontFamily: 'Montserrat' }}>
+                EventFlow
+              </Typography>
+              <Typography variant="body2" sx={{ mb: 2, opacity: 0.8 }}>
+                Streamline your event management process with our powerful platform.
+              </Typography>
+            </Grid>
+            <Grid item xs={12} md={4} sx={{ textAlign: 'left' }}>
+              <Typography variant="h6" sx={{ mb: 2, fontFamily: 'Montserrat' }}>
+                Quick Links
+              </Typography>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                {['About Us', 'Contact', 'Privacy Policy', 'Terms of Service'].map((link) => (
+                  <Typography
+                    key={link}
+                    variant="body2"
+                    sx={{
+                      opacity: 0.8,
+                      cursor: 'pointer',
+                      '&:hover': { opacity: 1 },
+                    }}
+                  >
+                    {link}
+                  </Typography>
+                ))}
+              </Box>
+            </Grid>
+            <Grid item xs={12} md={4} sx={{ textAlign: 'left' }}>
+              <Typography variant="h6" sx={{ mb: 2, fontFamily: 'Montserrat' }}>
+                Subscribe to Our Newsletter
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <TextField
+                  variant="outlined"
+                  size="small"
+                  placeholder="Enter your email"
+                  sx={{
+                    flex: 1,
+                    '& .MuiOutlinedInput-root': {
+                      bgcolor: 'white',
+                    },
+                  }}
+                />
+                <Button
+                  variant="contained"
+                  sx={{
+                    bgcolor: '#000',
+                    '&:hover': { bgcolor: '#222' },
+                  }}
+                >
+                  Subscribe
+                </Button>
+              </Box>
+            </Grid>
+          </Grid>
+          <Box sx={{ mt: 4, textAlign: 'center', opacity: 0.8 }}>
+            <Typography variant="body2">
+              2025 EventFlow. All rights reserved.
+            </Typography>
+          </Box>
+        </Container>
       </Box>
-
-      <Footer />
     </Box>
   );
 };

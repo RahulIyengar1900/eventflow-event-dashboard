@@ -1,7 +1,6 @@
 import React from 'react';
-import { useState } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
-import { ThemeProvider, createTheme, CssBaseline, Box } from '@mui/material'
+import { ThemeProvider, createTheme, CssBaseline } from '@mui/material'
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import Login from './components/auth/Login'
@@ -10,6 +9,10 @@ import Dashboard from './components/dashboard/Dashboard'
 import Navigation from './components/layout/Navigation'
 import Events from './pages/Events';
 import Tasks from './pages/Tasks';
+import { AuthProvider } from './context/AuthContext';
+import ProtectedRoute from './components/auth/ProtectedRoute';
+import { Box } from '@mui/material';
+import './App.css';
 
 const theme = createTheme({
   palette: {
@@ -44,38 +47,102 @@ const theme = createTheme({
       },
     },
   },
-})
+});
 
 function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <LocalizationProvider dateAdapter={AdapterDateFns}>
-        <Router basename="/eventflow-event-dashboard">
-          <Box sx={{ display: 'flex' }}>
-            <Navigation />
-            <Box
-              component="main"
-              sx={{
-                flexGrow: 1,
-                minHeight: '100vh',
-                backgroundColor: '#f5f5f5',
-              }}
-            >
+        <AuthProvider>
+          <Router>
+            <Box sx={{ 
+              display: 'flex',
+              flexDirection: 'column',
+              minHeight: '100vh',
+              width: '100vw',
+              maxWidth: '100%',
+              overflowX: 'hidden'
+            }}>
               <Routes>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/events" element={<Events />} />
-                <Route path="/tasks" element={<Tasks />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<SignUp />} />
-                <Route path="*" element={<Navigate to="/" replace />} />
+                <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                
+                <Route
+                  path="/dashboard"
+                  element={
+                    <ProtectedRoute>
+                      <Box sx={{ 
+                        width: '100%',
+                        maxWidth: '100%',
+                        overflowX: 'hidden'
+                      }}>
+                        <Navigation />
+                        <Box component="main" sx={{ 
+                          width: '100%',
+                          maxWidth: '100%',
+                          overflowX: 'hidden'
+                        }}>
+                          <Dashboard />
+                        </Box>
+                      </Box>
+                    </ProtectedRoute>
+                  }
+                />
+                
+                <Route
+                  path="/events/*"
+                  element={
+                    <ProtectedRoute>
+                      <Box sx={{ 
+                        width: '100%',
+                        maxWidth: '100%',
+                        overflowX: 'hidden'
+                      }}>
+                        <Navigation />
+                        <Box component="main" sx={{ 
+                          width: '100%',
+                          maxWidth: '100%',
+                          overflowX: 'hidden'
+                        }}>
+                          <Events />
+                        </Box>
+                      </Box>
+                    </ProtectedRoute>
+                  }
+                />
+                
+                <Route
+                  path="/tasks/*"
+                  element={
+                    <ProtectedRoute>
+                      <Box sx={{ 
+                        width: '100%',
+                        maxWidth: '100%',
+                        overflowX: 'hidden'
+                      }}>
+                        <Navigation />
+                        <Box component="main" sx={{ 
+                          width: '100%',
+                          maxWidth: '100%',
+                          overflowX: 'hidden'
+                        }}>
+                          <Tasks />
+                        </Box>
+                      </Box>
+                    </ProtectedRoute>
+                  }
+                />
+                
+                <Route path="*" element={<Navigate to="/dashboard" replace />} />
               </Routes>
             </Box>
-          </Box>
-        </Router>
+          </Router>
+        </AuthProvider>
       </LocalizationProvider>
     </ThemeProvider>
-  )
+  );
 }
 
-export default App
+export default App;

@@ -4,283 +4,339 @@ import {
   Button,
   TextField,
   Typography,
-  Grid,
-  InputAdornment,
-  Link,
+  IconButton,
+  Container,
+  Paper,
+  Snackbar,
+  Alert,
 } from '@mui/material';
+import { Close as CloseIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import EmailIcon from '@mui/icons-material/Email';
-import LockIcon from '@mui/icons-material/Lock';
-import EventIcon from '@mui/icons-material/Event';
+import { useAuth } from '../../context/AuthContext';
 
 const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [formData, setFormData] = useState({
+    fullName: '',
+    email: '',
+    password: '',
+  });
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success'
+  });
+  
   const navigate = useNavigate();
+  const { login } = useAuth();
 
-  const handleLogin = (e) => {
-    e.preventDefault();
-    // In a real app, you would validate credentials here
-    console.log('Login attempt with:', { email, password });
-    // For demo purposes, we'll just navigate to dashboard
-    navigate('/dashboard');
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbar(prev => ({ ...prev, open: false }));
+  };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    
+    try {
+      if (isSignUp) {
+        if (!formData.fullName || !formData.email || !formData.password) {
+          setSnackbar({
+            open: true,
+            message: 'Please fill in all fields',
+            severity: 'error'
+          });
+          return;
+        }
+        
+        // Create account
+        const userData = {
+          firstName: formData.fullName.split(' ')[0],
+          lastName: formData.fullName.split(' ').slice(1).join(' '),
+          fullName: formData.fullName,
+          email: formData.email,
+        };
+        
+        login(userData);
+        setSnackbar({
+          open: true,
+          message: 'Account created successfully!',
+          severity: 'success'
+        });
+        
+        // Wait for snackbar to show before navigating
+        setTimeout(() => {
+          navigate('/dashboard');
+        }, 1500);
+      } else {
+        // Handle login
+        if (!formData.email || !formData.password) {
+          setSnackbar({
+            open: true,
+            message: 'Please enter both email and password',
+            severity: 'error'
+          });
+          return;
+        }
+        
+        // For demo, allow any login
+        const userData = {
+          firstName: 'Demo',
+          lastName: 'User',
+          fullName: 'Demo User',
+          email: formData.email,
+        };
+        
+        login(userData);
+        navigate('/dashboard');
+      }
+    } catch (error) {
+      setSnackbar({
+        open: true,
+        message: 'An error occurred. Please try again.',
+        severity: 'error'
+      });
+    }
   };
 
   return (
     <Box
       sx={{
-        minHeight: '100vh',
+        margin: 0,
+        padding: 0,
+        height: '100vh',
+        width: '100vw',
         display: 'flex',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        overflow: 'hidden',
       }}
     >
-      <Grid container>
-        {/* Left Section - Hero Image */}
-        <Grid
-          item
-          xs={12}
-          md={8}
-          sx={{
-            position: 'relative',
-            display: { xs: 'none', md: 'flex' },
-            flexDirection: 'column',
-            justifyContent: 'center',
-            padding: 8,
-            color: 'white',
-            '&::before': {
-              content: '""',
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: 'rgba(0, 0, 0, 0.3)',
-              zIndex: 1,
-            },
-            '&::after': {
-              content: '""',
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundImage: `url('https://idaete.com/wp-content/uploads/2025/01/business-people-walking-trade-show-booths-ideal-websites-magazines-layouts-scaled.jpg')`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              zIndex: 0,
-            },
-          }}
-        >
-          <Box sx={{ maxWidth: '600px', margin: '0 auto', position: 'relative', zIndex: 2 }}>
-            <EventIcon sx={{ fontSize: 72, mb: 4 }} />
-            <Typography 
-              variant="h2" 
-              gutterBottom 
-              sx={{ 
-                fontWeight: 700, 
-                mb: 3,
-                fontFamily: 'Montserrat',
-                letterSpacing: '-1px'
-              }}
-            >
-              EventFlow
-            </Typography>
-            <Typography 
-              variant="h4" 
-              gutterBottom 
-              sx={{ 
-                mb: 4, 
-                fontWeight: 500,
-                fontFamily: 'Montserrat',
-                letterSpacing: '-0.5px'
-              }}
-            >
-              Streamline Your Event Management
-            </Typography>
-            <Typography 
-              variant="h6" 
-              sx={{ 
-                opacity: 0.9, 
-                lineHeight: 1.6,
-                fontFamily: 'Montserrat',
-                fontWeight: 400
-              }}
-            >
-              Create, manage, and track your events with ease. Assign tasks, manage attendees,
-              and keep everything organized in one place. Perfect for event planners and organizers.
-            </Typography>
-          </Box>
-        </Grid>
+      {/* Background Image */}
+      <Box
+        sx={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          backgroundImage: 'url("https://idaete.com/wp-content/uploads/2025/01/blurred-people-walking-scaled.jpg")',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0, 0, 0, 0.6)',
+          },
+        }}
+      />
 
-        {/* Right Section - Login Form */}
-        <Grid
-          item
-          xs={12}
-          md={4}
+      {/* Content */}
+      <Container 
+        maxWidth={false} 
+        sx={{ 
+          display: 'flex',
+          position: 'relative',
+          zIndex: 1,
+          m: 0,
+          p: { xs: 2, md: 6 },
+          overflow: 'hidden',
+        }}
+      >
+        {/* Left Side - Text */}
+        <Box
           sx={{
+            flex: 1,
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center',
-            padding: { xs: 4, md: 6 },
-            backgroundColor: 'white',
+            color: 'white',
+            pr: 6,
+            textAlign: 'left',
           }}
         >
-          <Box sx={{ maxWidth: '400px', margin: '0 auto', width: '100%' }}>
-            <Typography 
-              variant="h4" 
-              gutterBottom 
-              sx={{ 
-                fontWeight: 700, 
-                mb: 4,
-                fontFamily: 'Montserrat',
-                letterSpacing: '-0.5px',
-                color: '#333'
-              }}
-            >
-              Welcome Back
+          <Typography
+            variant="h2"
+            sx={{
+              fontWeight: 700,
+              mb: 2,
+              fontFamily: 'Montserrat',
+            }}
+          >
+            EventFlow
+          </Typography>
+          <Typography
+            variant="h4"
+            sx={{
+              mb: 3,
+              fontFamily: 'Montserrat',
+            }}
+          >
+            Streamline Your Event Management
+          </Typography>
+          <Typography
+            variant="h6"
+            sx={{
+              maxWidth: '600px',
+              opacity: 0.8,
+              fontFamily: 'Montserrat',
+            }}
+          >
+            Efficiently manage your events, track attendees, and organize tasks all in one place.
+            Join thousands of event planners who trust EventFlow for their event management needs.
+          </Typography>
+        </Box>
+
+        {/* Right Side - Form */}
+        <Box
+          sx={{
+            flex: 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Paper
+            elevation={24}
+            sx={{
+              p: 4,
+              width: '100%',
+              maxWidth: '400px',
+              backgroundColor: 'white',
+              position: 'relative',
+            }}
+          >
+            {isSignUp && (
+              <IconButton
+                sx={{
+                  position: 'absolute',
+                  top: 8,
+                  right: 8,
+                }}
+                onClick={() => setIsSignUp(false)}
+              >
+                <CloseIcon />
+              </IconButton>
+            )}
+            
+            <Typography variant="h4" sx={{ mb: 4, fontFamily: 'Montserrat' }}>
+              {isSignUp ? 'Create Account' : 'Welcome Back'}
             </Typography>
-            <Box component="form" onSubmit={handleLogin}>
+            
+            <form onSubmit={handleSubmit}>
+              {isSignUp && (
+                <TextField
+                  fullWidth
+                  label="Full Name"
+                  name="fullName"
+                  margin="normal"
+                  required
+                  value={formData.fullName}
+                  onChange={handleChange}
+                  sx={{ mb: 2 }}
+                />
+              )}
+              
               <TextField
-                margin="normal"
-                required
                 fullWidth
-                id="email"
                 label="Email Address"
                 name="email"
-                autoComplete="email"
-                autoFocus
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <EmailIcon sx={{ color: 'text.secondary' }} />
-                    </InputAdornment>
-                  ),
-                }}
-                sx={{ 
-                  mb: 2,
-                  '& .MuiInputLabel-root': {
-                    fontFamily: 'Montserrat'
-                  },
-                  '& .MuiInputBase-input': {
-                    fontFamily: 'Montserrat'
-                  },
-                  '& .MuiOutlinedInput-root': {
-                    '& fieldset': {
-                      borderColor: '#e0e0e0',
-                    },
-                    '&:hover fieldset': {
-                      borderColor: '#333',
-                    },
-                    '&.Mui-focused fieldset': {
-                      borderColor: '#333',
-                    },
-                  },
-                }}
-              />
-              <TextField
                 margin="normal"
                 required
-                fullWidth
-                name="password"
-                label="Password"
-                type="password"
-                id="password"
-                autoComplete="current-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <LockIcon sx={{ color: 'text.secondary' }} />
-                    </InputAdornment>
-                  ),
-                }}
-                sx={{ 
-                  mb: 3,
-                  '& .MuiInputLabel-root': {
-                    fontFamily: 'Montserrat'
-                  },
-                  '& .MuiInputBase-input': {
-                    fontFamily: 'Montserrat'
-                  },
-                  '& .MuiOutlinedInput-root': {
-                    '& fieldset': {
-                      borderColor: '#e0e0e0',
-                    },
-                    '&:hover fieldset': {
-                      borderColor: '#333',
-                    },
-                    '&.Mui-focused fieldset': {
-                      borderColor: '#333',
-                    },
-                  },
-                }}
+                type="email"
+                value={formData.email}
+                onChange={handleChange}
+                sx={{ mb: 2 }}
               />
-              <Box sx={{ textAlign: 'right', mb: 2 }}>
-                <Link
-                  href="#"
-                  sx={{
-                    color: '#666',
-                    textDecoration: 'none',
-                    fontFamily: 'Montserrat',
-                    fontSize: '0.875rem',
-                    '&:hover': {
-                      color: '#333',
-                      textDecoration: 'underline',
-                    },
-                  }}
-                >
-                  Forgot password?
-                </Link>
-              </Box>
-              <Button
-                type="submit"
+              
+              <TextField
                 fullWidth
+                label="Password"
+                name="password"
+                margin="normal"
+                required
+                type="password"
+                value={formData.password}
+                onChange={handleChange}
+                sx={{ mb: 3 }}
+              />
+              
+              <Button
+                fullWidth
+                size="large"
+                type="submit"
                 variant="contained"
                 sx={{
-                  py: 1.5,
-                  fontSize: '1.1rem',
-                  textTransform: 'none',
-                  borderRadius: '8px',
-                  fontFamily: 'Montserrat',
-                  fontWeight: 600,
-                  backgroundColor: '#333',
+                  mb: 2,
+                  bgcolor: '#333',
                   '&:hover': {
-                    backgroundColor: '#000',
+                    bgcolor: '#000',
                   },
                 }}
               >
-                Sign In
+                {isSignUp ? 'Sign Up' : 'Sign In'}
               </Button>
-              <Box sx={{ textAlign: 'center', mt: 3 }}>
-                <Typography
-                  variant="body2"
-                  sx={{
-                    fontFamily: 'Montserrat',
-                    color: '#666',
-                  }}
-                >
-                  Don't have an account?{' '}
-                  <Link
-                    href="#"
+              
+              {isSignUp ? (
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                  <Button
+                    variant="outlined"
+                    onClick={() => setIsSignUp(false)}
                     sx={{
+                      flex: 1,
+                      borderColor: '#333',
                       color: '#333',
-                      textDecoration: 'none',
-                      fontWeight: 600,
                       '&:hover': {
-                        textDecoration: 'underline',
+                        borderColor: '#000',
+                        bgcolor: 'rgba(0,0,0,0.05)',
                       },
                     }}
                   >
-                    Sign up here
-                  </Link>
-                </Typography>
-              </Box>
-            </Box>
-          </Box>
-        </Grid>
-      </Grid>
+                    Back
+                  </Button>
+                </Box>
+              ) : (
+                <Button
+                  fullWidth
+                  onClick={() => setIsSignUp(true)}
+                  sx={{
+                    color: '#666',
+                    '&:hover': {
+                      bgcolor: 'rgba(0,0,0,0.05)',
+                    },
+                  }}
+                >
+                  Don't have an account? Sign Up
+                </Button>
+              )}
+            </form>
+          </Paper>
+        </Box>
+      </Container>
+
+      {/* Snackbar for notifications */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert onClose={handleSnackbarClose} severity={snackbar.severity}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
