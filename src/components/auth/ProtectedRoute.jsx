@@ -1,22 +1,22 @@
 import React, { useEffect } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, login } = useAuth();
+  const { isAuthenticated } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const userData = localStorage.getItem('userData');
-    if (userData && !isAuthenticated) {
-      login(JSON.parse(userData));
+    if (!isAuthenticated) {
+      navigate('/login', { 
+        replace: true,
+        state: { from: location }
+      });
     }
-  }, []);
+  }, [isAuthenticated]);
 
-  if (!isAuthenticated && !localStorage.getItem('userData')) {
-    return <Navigate to="/login" replace />;
-  }
-
-  return children;
+  return isAuthenticated ? children : null;
 };
 
 export default ProtectedRoute;

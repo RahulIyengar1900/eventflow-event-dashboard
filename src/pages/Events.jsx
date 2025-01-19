@@ -19,6 +19,8 @@ import {
   Select,
   FormControl,
   InputLabel,
+  Snackbar,
+  Alert
 } from '@mui/material';
 import {
   MoreVert as MoreVertIcon,
@@ -26,17 +28,26 @@ import {
   FileCopy as FileCopyIcon,
   Share as ShareIcon,
   Cancel as CancelIcon,
+  Event as EventIcon,
+  People as PeopleIcon
 } from '@mui/icons-material';
 import PageHeader from '../components/layout/PageHeader';
 import Footer from '../components/layout/Footer';
+import { useEvents } from '../context/EventContext';
 
 const Events = () => {
+  const { events, addEvent } = useEvents();
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [editDialog, setEditDialog] = useState(false);
   const [shareDialog, setShareDialog] = useState(false);
   const [cancelDialog, setCancelDialog] = useState(false);
   const [filter, setFilter] = useState('all');
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success'
+  });
 
   const handleMenuClick = (event, eventData) => {
     setAnchorEl(event.currentTarget);
@@ -67,87 +78,35 @@ const Events = () => {
     setCancelDialog(true);
   };
 
-  const events = [
-    {
-      id: 1,
-      title: 'Design Workshop 2025',
-      date: '2025-02-15',
-      location: 'San Francisco, CA',
-      status: 'upcoming',
-      image: 'https://idaete.com/wp-content/uploads/2025/01/group-diverse-people-attending-startup-business-course-scaled.jpg',
-      description: 'Join us for an immersive design workshop focused on the latest UI/UX trends.',
-    },
-    {
-      id: 2,
-      title: 'Tech Conference',
-      date: '2025-03-01',
-      location: 'New York, NY',
-      status: 'this-month',
-      image: 'https://idaete.com/wp-content/uploads/2025/01/art-school-student-consulting-drawing-master-scaled.jpg',
-      description: 'The biggest tech conference of the year featuring industry leaders and innovators.',
-    },
-    {
-      id: 3,
-      title: 'Team Building Event',
-      date: '2025-03-15',
-      location: 'Austin, TX',
-      status: 'upcoming',
-      image: 'https://idaete.com/wp-content/uploads/2025/01/group-young-caucasian-people-celebrating-look-happy-have-corporate-party-office-bar-scaled.jpg',
-      description: 'A day of team-building activities and networking opportunities.',
-    },
-    {
-      id: 4,
-      title: 'Product Launch',
-      date: '2025-01-10',
-      location: 'Seattle, WA',
-      status: 'past',
-      image: 'https://idaete.com/wp-content/uploads/2025/01/expo-essence-dynamic-crowd-dynamics-blurred-hues-scaled.jpg',
-      description: 'Join us for the launch of our revolutionary new product.',
-    },
-    {
-      id: 5,
-      title: 'Innovation Summit',
-      date: '2025-02-28',
-      location: 'Boston, MA',
-      status: 'this-month',
-      image: 'https://idaete.com/wp-content/uploads/2025/01/blurred-people-trade-fair-2-scaled.jpg',
-      description: 'A gathering of thought leaders discussing future innovations.',
-    },
-    {
-      id: 6,
-      title: 'Marketing Symposium',
-      date: '2025-04-05',
-      location: 'Chicago, IL',
-      status: 'upcoming',
-      image: 'https://idaete.com/wp-content/uploads/2025/01/ideal-websites-magazines-layouts-scaled.jpg',
-      description: 'Learn about the latest marketing strategies and trends.',
-    },
-    {
-      id: 7,
-      title: 'Startup Showcase',
-      date: '2025-01-20',
-      location: 'Miami, FL',
-      status: 'past',
-      image: 'https://idaete.com/wp-content/uploads/2025/01/trade-show-visitors-walking-trade-fair-booths-scaled.jpg',
-      description: 'A platform for startups to showcase their innovative solutions.',
-    },
-    {
-      id: 8,
-      title: 'Leadership Conference',
-      date: '2025-03-25',
-      location: 'Los Angeles, CA',
-      status: 'upcoming',
-      image: 'https://idaete.com/wp-content/uploads/2025/01/ideal-websites-magazines-layouts-2-scaled.jpg',
-      description: 'Develop your leadership skills with industry experts.',
-    },
-  ];
+  const handleCreateEvent = async (eventData) => {
+    try {
+      const newEvent = await addEvent(eventData);
+      setEditDialog(false);
+      setSnackbar({
+        open: true,
+        message: 'Event created successfully!',
+        severity: 'success'
+      });
+    } catch (error) {
+      console.error('Failed to create event:', error);
+      setSnackbar({
+        open: true,
+        message: 'Failed to create event. Please try again.',
+        severity: 'error'
+      });
+    }
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar(prev => ({ ...prev, open: false }));
+  };
 
   const filteredEvents = filter === 'all' 
     ? events 
     : events.filter(event => event.status === filter);
 
   return (
-    <Box sx={{ flexGrow: 1 }}>
+    <Box>
       <PageHeader
         title="Events"
         subtitle="Manage and track all your events in one place"
@@ -172,49 +131,43 @@ const Events = () => {
         </Box>
 
         {/* Events Grid */}
-        <Grid container spacing={4}>
+        <Grid container spacing={3}>
           {filteredEvents.map((event) => (
             <Grid item xs={12} sm={6} md={4} key={event.id}>
-              <Card sx={{ height: '100%', position: 'relative' }}>
-                <Box sx={{ position: 'relative' }}>
-                  <CardMedia
-                    component="img"
-                    height="200"
-                    image={event.image}
-                    alt={event.title}
-                  />
-                  {event.status === 'upcoming' && (
-                    <Chip
-                      label="Upcoming"
-                      sx={{
-                        position: 'absolute',
-                        top: 16,
-                        left: 16,
-                        bgcolor: 'error.main',
-                        color: 'white',
-                        border: '1px solid white',
-                      }}
-                    />
-                  )}
-                </Box>
-                <CardContent sx={{ textAlign: 'left' }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <Typography variant="h6" gutterBottom>
-                      {event.title}
+              <Card>
+                <CardMedia
+                  component="img"
+                  height="200"
+                  image={event.image}
+                  alt={event.title}
+                />
+                <CardContent>
+                  <Typography variant="h6" gutterBottom>
+                    {event.title}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" paragraph>
+                    {event.description}
+                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                    <EventIcon sx={{ fontSize: 20, mr: 1, color: 'text.secondary' }} />
+                    <Typography variant="body2" color="text.secondary">
+                      {new Date(event.date).toLocaleDateString()} {event.time}
                     </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                    <PeopleIcon sx={{ fontSize: 20, mr: 1, color: 'text.secondary' }} />
+                    <Typography variant="body2" color="text.secondary">
+                      {event.expectedAttendees} Expected Attendees
+                    </Typography>
+                  </Box>
+                  <Typography variant="body2" color="text.secondary">
+                    {event.location}
+                  </Typography>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <IconButton onClick={(e) => handleMenuClick(e, event)}>
                       <MoreVertIcon />
                     </IconButton>
                   </Box>
-                  <Typography variant="body2" color="text.secondary" paragraph>
-                    {event.description}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Date: {event.date}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Location: {event.location}
-                  </Typography>
                 </CardContent>
               </Card>
             </Grid>
@@ -285,7 +238,7 @@ const Events = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setEditDialog(false)}>Cancel</Button>
-          <Button variant="contained">Save Changes</Button>
+          <Button variant="contained" onClick={() => handleCreateEvent(selectedEvent)}>Save Changes</Button>
         </DialogActions>
       </Dialog>
 
@@ -320,6 +273,22 @@ const Events = () => {
           <Button color="error" variant="contained">Yes, Cancel Event</Button>
         </DialogActions>
       </Dialog>
+
+      <Snackbar 
+        open={snackbar.open} 
+        autoHideDuration={6000} 
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert 
+          onClose={handleCloseSnackbar} 
+          severity={snackbar.severity}
+          variant="filled"
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
 
       <Footer />
     </Box>
