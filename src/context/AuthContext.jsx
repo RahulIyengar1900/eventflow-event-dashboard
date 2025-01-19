@@ -22,16 +22,9 @@ export const AuthProvider = ({ children }) => {
     setUser(userData);
   };
 
-  const logout = async () => {
-    return new Promise((resolve) => {
-      // Clear auth state
-      setIsAuthenticated(false);
-      setUser(null);
-      // Clear stored data
-      localStorage.removeItem('userData');
-      // Add any additional cleanup here
-      resolve();
-    });
+  const logout = () => {
+    setIsAuthenticated(false);
+    window.location.href = '/login';
   };
 
   return (
