@@ -81,7 +81,7 @@ const Dashboard = () => {
     { title: 'Total Events', value: '24', icon: EventIcon, color: '#2196f3' },
     { title: 'Total Attendees', value: '487', icon: PeopleIcon, color: '#4caf50' },
     { title: 'Active Tasks', value: '12', icon: TaskIcon, color: '#ff9800' },
-    { title: 'Revenue', value: '$15,200', icon: MoneyIcon, color: '#f44336' },
+    { title: 'Revenue', value: '₹34,70,500', icon: MoneyIcon, color: '#f44336' },
   ];
 
   const monthlyEventData = [
